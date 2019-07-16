@@ -62,7 +62,7 @@ class LoginActivity : AppCompatActivity() {
                 } else {
                     userRef.addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onCancelled(p0: DatabaseError) {
-                            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                            //notihing to do
                         }
 
                         override fun onDataChange(snapshot: DataSnapshot) {
@@ -80,7 +80,7 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        title = ""
+        title = "ログイン"
 
         createButton.setOnClickListener { v ->
             // キーボードが出てたら閉じる
