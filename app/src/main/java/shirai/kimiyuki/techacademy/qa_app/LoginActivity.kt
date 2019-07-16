@@ -1,11 +1,13 @@
 package shirai.kimiyuki.techacademy.qa_app
 
+import android.content.Context
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.renderscript.Sampler
 import android.support.design.widget.Snackbar
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
@@ -48,53 +50,80 @@ class LoginActivity : AppCompatActivity() {
         }
 
         mLoginListener = OnCompleteListener { task ->
-           if(task.isSuccessful){
-               val user =  mAuth.currentUser
-               val userRef = mDataBaseReference.child(UsersPATH).child(user!!.uid)
+            if (task.isSuccessful) {
+                val user = mAuth.currentUser
+                val userRef = mDataBaseReference.child(UsersPATH).child(user!!.uid)
 
-               if(mIsCreateAccount){
-                   val data = HashMap<String, String>()
-                   data["name"] = nameText.text.toString()
-                   userRef.setValue(data)
-                   saveName(nameText.text.toString())
-               }else{
-                   userRef.addListenerForSingleValueEvent(object: ValueEventListener{
-                       override fun onCancelled(p0: DatabaseError) {
-                           TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                       }
+                if (mIsCreateAccount) {
+                    val data = HashMap<String, String>()
+                    data["name"] = nameText.text.toString()
+                    userRef.setValue(data)
+                    saveName(nameText.text.toString())
+                } else {
+                    userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError) {
+                            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                        }
 
-                       override fun onDataChange(snapshot: DataSnapshot) {
-                           val data = snapshot.value as Map<*, *>?
-                           saveName(data!!["name"]  as String)
-                       }
-                   })
-                   progressBar.visibility = View.GONE
-                   finish()
-               }
-           }else{
-               val view = findViewById<View>(android.R.id.content)
-               Snackbar.make(view, "ログインに失敗しました", Snackbar.LENGTH_LONG)
-               progressBar.visibility = View.GONE
-           }
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            val data = snapshot.value as Map<*, *>?
+                            saveName(data!!["name"] as String)
+                        }
+                    })
+                    progressBar.visibility = View.GONE
+                    finish()
+                }
+            } else {
+                val view = findViewById<View>(android.R.id.content)
+                Snackbar.make(view, "ログインに失敗しました", Snackbar.LENGTH_LONG)
+                progressBar.visibility = View.GONE
+            }
         }
 
         title = ""
 
-        createButton.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-        })
+        createButton.setOnClickListener { v ->
+            // キーボードが出てたら閉じる
+            val im = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            im.hideSoftInputFromWindow(v.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
 
-        loginButton.setOnClickListener(object: View.OnClickListener{
-            override fun onClick(v: View?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            val email = emailText.text.toString()
+            val password = passwordText.text.toString()
+            val name = nameText.text.toString()
+
+            if (email.length != 0 && password.length >= 6 && name.length != 0) {
+                // ログイン時に表示名を保存するようにフラグを立てる
+                mIsCreateAccount = true
+
+                createAccount(email, password)
+            } else {
+                // エラーを表示する
+                Snackbar.make(v, "正しく入力してください", Snackbar.LENGTH_LONG).show()
             }
-        })
+        }
+
+        loginButton.setOnClickListener { v ->
+            // キーボードが出てたら閉じる
+            val im = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            im.hideSoftInputFromWindow(v.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+
+            val email = emailText.text.toString()
+            val password = passwordText.text.toString()
+
+            if (email.length != 0 && password.length >= 6) {
+                // フラグを落としておく
+                mIsCreateAccount = false
+
+                login(email, password)
+            } else {
+                // エラーを表示する
+                Snackbar.make(v, "正しく入力してください", Snackbar.LENGTH_LONG).show()
+            }
+        }
 
     }
 
-    private fun createAccount(email:String, password:String){
+    private fun createAccount(email: String, password: String) {
         // プログレスバーを表示する
         progressBar.visibility = View.VISIBLE
 
@@ -103,7 +132,7 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    private fun login(email:String, password: String){
+    private fun login(email: String, password: String) {
         // プログレスバーを表示する
         progressBar.visibility = View.VISIBLE
 
@@ -111,7 +140,7 @@ class LoginActivity : AppCompatActivity() {
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(mLoginListener)
     }
 
-    private fun saveName(name:String){
+    private fun saveName(name: String) {
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
         val editor = sp.edit()
         editor.putString(NameKEY, name)

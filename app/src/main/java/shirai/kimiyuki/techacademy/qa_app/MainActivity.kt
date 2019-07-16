@@ -1,10 +1,14 @@
 package shirai.kimiyuki.techacademy.qa_app
 
+import android.app.Application
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import com.google.firebase.auth.FirebaseAuth
 
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -15,9 +19,15 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+        fab.setOnClickListener { _ ->
+            val user = FirebaseAuth.getInstance().currentUser
+            Log.d("hello_qa", user.toString())
+            val intent = Intent(applicationContext, LoginActivity::class.java)
+            startActivity(intent)
+//            if(user == null){
+//                val intent = Intent(applicationContext, LoginActivity::class.java)
+//                startActivity(intent)
+//            }
         }
     }
 
@@ -25,6 +35,7 @@ class MainActivity : AppCompatActivity() {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
+        //"dslkjdsl328a"
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
