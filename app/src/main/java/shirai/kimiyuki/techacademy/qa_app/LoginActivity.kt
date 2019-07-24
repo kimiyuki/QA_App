@@ -4,7 +4,6 @@ import android.content.Context
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.renderscript.Sampler
 import android.support.design.widget.Snackbar
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -17,9 +16,10 @@ import kotlinx.android.synthetic.main.activity_login.*
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var mAuth: FirebaseAuth
+    private lateinit var mDataBaseReference: DatabaseReference
+
     private lateinit var mCreateAccountListener: OnCompleteListener<AuthResult>
     private lateinit var mLoginListener: OnCompleteListener<AuthResult>
-    private lateinit var mDataBaseReference: DatabaseReference
 
     // アカウント作成時にフラグを立て、ログイン処理後に名前をFirebaseに保存する
     private var mIsCreateAccount = false
@@ -61,7 +61,7 @@ class LoginActivity : AppCompatActivity() {
                     saveName(nameText.text.toString())
                 } else {
                     userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onCancelled(p0: DatabaseError) {
+                        override fun onCancelled(firebaseError: DatabaseError) {
                             //notihing to do
                         }
 
@@ -128,7 +128,8 @@ class LoginActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
 
         // アカウントを作成する
-        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(mCreateAccountListener)
+        mAuth.createUserWithEmailAndPassword(
+            email, password ).addOnCompleteListener(mCreateAccountListener)
 
     }
 
