@@ -37,7 +37,7 @@ class SettingActivity : AppCompatActivity() {
             val user = FirebaseAuth.getInstance().currentUser
 
             if(user == null){
-                Snackbar.make(v, "ログインしていません", Snackbar.LENGTH_LONG)
+                Snackbar.make(v, "ログインしていません", Snackbar.LENGTH_LONG).show()
             }else{
                 val name = nameText.text.toString()
                 val userRef = mDataBaseReference.child(UsersPATH).child(user.uid)
@@ -50,8 +50,13 @@ class SettingActivity : AppCompatActivity() {
                 editor.putString(NameKEY,name)
                 editor.commit()
                 Snackbar.make(v, "表示名を変更しました", Snackbar.LENGTH_LONG).show()
-
             }
+        }
+
+        logoutButton.setOnClickListener{v ->
+            FirebaseAuth.getInstance().signOut()
+            nameText.setText("")
+            Snackbar.make(v, "ログアウトしました。", Snackbar.LENGTH_LONG).show()
         }
     }
 }

@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val id = item.itemId
         if(id == R.id.action_settings){
             val intent = Intent(applicationContext, SettingActivity::class.java)
-            startActivity(intent)
+           startActivity(intent)
             return true
         }
        return super.onOptionsItemSelected(item)
