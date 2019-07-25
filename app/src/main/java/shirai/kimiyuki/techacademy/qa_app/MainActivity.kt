@@ -3,6 +3,7 @@ package shirai.kimiyuki.techacademy.qa_app
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.NavigationView
+import android.support.design.widget.Snackbar
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
@@ -23,11 +24,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        fab.setOnClickListener {
+        fab.setOnClickListener {view ->
+            if(mGenre == 0){
+                Snackbar.make(view,"ジャンルを設定してください",Snackbar.LENGTH_LONG )
+            }
             val user = FirebaseAuth.getInstance().currentUser
             Log.d("hello_qa", user.toString())
             if(user == null){
                 val intent = Intent(applicationContext, LoginActivity::class.java)
+                startActivity(intent)
+            }else{
+                val intent = Intent(applicationContext, QuestionSendActivity::class.java)
+                intent.putExtra("genre", mGenre)
                 startActivity(intent)
             }
         }
@@ -37,6 +45,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         toggle.syncState()
 
         nav_view.setNavigationItemSelectedListener(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(mGenre == 0){ onNavigationItemSelected(nav_view.menu.getItem(0)) }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
