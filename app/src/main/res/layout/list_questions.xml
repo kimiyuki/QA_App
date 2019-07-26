@@ -14,7 +14,7 @@
             android:layout_height="50dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Title"
-            android:id="@+id/titleTextView"
+            android:id="@+id/titleTextView1"
             android:layout_alignParentTop="true"
             android:layout_toEndOf="@+id/imageView" />
 
@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="name"
-            android:id="@+id/nameTextView"
+            android:id="@+id/nameTextView1"
             android:layout_below="@+id/titleTextView"
             android:layout_alignParentRight="true"
             android:layout_marginRight="10dp"/>
@@ -32,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="New Text"
-            android:id="@+id/resTextView"
+            android:id="@+id/resTextView1"
             android:layout_below="@+id/titleTextView"
             android:layout_toEndOf="@+id/imageView" />
 </RelativeLayout>
