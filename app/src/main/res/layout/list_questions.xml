@@ -16,23 +16,27 @@
             android:text="Title"
             android:id="@+id/titleTextView1"
             android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/imageView" />
-
-    <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="name"
-            android:id="@+id/nameTextView1"
-            android:layout_below="@+id/titleTextView"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"/>
+            android:layout_alignTop="@+id/imageView1"
+            android:layout_toEndOf="@id/imageView1"/>
 
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="New Text"
             android:id="@+id/resTextView1"
-            android:layout_below="@+id/titleTextView"
-            android:layout_toEndOf="@+id/imageView" />
+            android:layout_alignParentBottom="true"
+            android:layout_below="@+id/titleTextView1"
+            android:layout_toEndOf="@+id/imageView1"
+            android:layout_toStartOf="@id/titleTextView1" android:layout_alignParentEnd="true"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="name"
+            android:id="@+id/nameTextView1"
+            android:layout_below="@+id/titleTextView1"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="10dp"/>
+
 </RelativeLayout>

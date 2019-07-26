@@ -30,9 +30,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private val mEventListener = object: ChildEventListener {
         override fun onCancelled(p0: DatabaseError) { }
-
         override fun onChildMoved(p0: DataSnapshot, p1: String?) { }
-
         override fun onChildChanged(dataSnapshot: DataSnapshot, p1: String?) {
             val values  = dataSnapshot.value as Map<String, String>
             mQuestionArrayList.filter{ dataSnapshot.key.equals(it.questionUid)}
@@ -70,10 +68,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             mQuestionArrayList.add(question)
             mAdapter.notifyDataSetChanged()
         }
-
-        override fun onChildRemoved(p0: DataSnapshot) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
+        override fun onChildRemoved(p0: DataSnapshot) {}
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
