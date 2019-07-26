@@ -3,12 +3,11 @@ package shirai.kimiyuki.techacademy.qa_app
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.text.Editable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import kotlinx.android.synthetic.main.activity_question_send.view.*
 import kotlinx.android.synthetic.main.list_questions.view.*
 import shirai.kimiyuki.techacademy.qa_app.Model.Question
 
@@ -22,21 +21,23 @@ class QuestionsListAdapter(context: Context):BaseAdapter() {
     }
 
     fun setQuestionArrayList(questionArrayList: ArrayList<Question>) {
+        Log.d("hello question", questionArrayList.size.toString())
         mQuestionArrayList = questionArrayList
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        var convertView = convertView ?: mLayoutInflater.inflate(R.layout.list_questions, parent, false)
-        convertView.titleText.text = mQuestionArrayList[position].title as Editable
-        convertView.nameTextView.text = mQuestionArrayList[position].name as Editable
-        convertView.resTextView.text = mQuestionArrayList[position].answers.size as Editable
+        Log.d("hello getView", position.toString())
+        var v= convertView ?: mLayoutInflater.inflate(R.layout.list_questions, parent, false)
+        v.titleTextView1.setText(mQuestionArrayList[position].title)
+        v.nameTextView1.setText(mQuestionArrayList[position].name)
+        v.resTextView1.setText(mQuestionArrayList[position].answers.size.toString())
         val bytes = mQuestionArrayList[position].imageBytes
         if(bytes.isNotEmpty()){
             val image = BitmapFactory.decodeByteArray(bytes, 0, bytes.size).
                 copy(Bitmap.Config.ARGB_8888, true)
-            convertView.imageView1.setImageBitmap(image)
+            v.imageView1.setImageBitmap(image)
         }
-        return convertView
+        return v
     }
 
     override fun getItem(position: Int): Any {

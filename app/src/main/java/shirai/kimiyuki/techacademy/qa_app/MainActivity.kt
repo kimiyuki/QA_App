@@ -24,7 +24,6 @@ import shirai.kimiyuki.techacademy.qa_app.Model.Question
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var mGenre = 0
     private lateinit var mDatabaseReference: DatabaseReference
-    private lateinit var mListView: ListView
     private lateinit var mQuestionArrayList: ArrayList<Question>
     private lateinit var mAdapter: QuestionsListAdapter
     private var mGenreRef: DatabaseReference? = null
@@ -43,10 +42,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         for(key in answerMap.keys){
                             val temp = answerMap[key] as Map<String, String>
                             it.answers.add( Answer(
-                                temp["body"] ?: "",
-                                temp["name"] ?: "",
-                                temp["uid"] ?: "",
-                                key )) } } }
+                                temp["body"] ?: "", temp["name"] ?: "", temp["uid"] ?: "", key )) } } }
             mAdapter.notifyDataSetChanged()
         }
 
@@ -110,6 +106,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         mAdapter = QuestionsListAdapter(this)
         mQuestionArrayList = ArrayList<Question>()
         mAdapter.notifyDataSetChanged()
+
+        listView.setOnItemClickListener{parent, view, position, id ->
+            val intent  = Intent(applicationContext, QuestionDetailActivity::class.java)
+            intent.putExtra("question", mQuestionArrayList[position])
+            startActivity(intent)
+        }
     }
 
     override fun onResume() {
@@ -138,10 +140,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        when(id){
+        when(item.itemId){
             R.id.nav_hobby -> { toolbar.title = "趣味"; mGenre = 1}
-            R.id.nav_life -> { toolbar.title = "生活"; mGenre = 2 }
+            R.id.nav_life -> { toolbar.title = "生活"; mGenre = 2}
             R.id.nav_health -> { toolbar.title = "健康"; mGenre = 3}
             R.id.nav_compter -> { toolbar.title = "コンピューター"; mGenre = 4}
         }
