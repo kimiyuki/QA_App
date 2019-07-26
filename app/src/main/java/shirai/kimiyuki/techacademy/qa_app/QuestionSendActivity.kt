@@ -1,24 +1,27 @@
 package shirai.kimiyuki.techacademy.qa_app
 
-import android.app.Instrumentation
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.Manifest
+import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.graphics.drawable.BitmapDrawable
 import android.preference.PreferenceManager
 import android.provider.MediaStore
 import android.support.design.widget.Snackbar
 import android.util.Base64
 import android.view.View
-import android.view.inputmethod.InputMethod
 import android.view.inputmethod.InputMethodManager
+import android.widget.Button
+import android.widget.ImageView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -53,72 +56,104 @@ class QuestionSendActivity : AppCompatActivity(), View.OnClickListener, Database
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-    }
-
-    override fun onClick(v: View?) {
-        if(v === imageView){
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-                if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-                    showChooser()
-                }else{
-                    requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSIONS_REQUEST_CODE)
-                    return
+        if(requestCode == CHOOSER_REQUEST_CODE){
+            if(resultCode != Activity.RESULT_OK){
+                if(mPictureUri != null){
+                    contentResolver.delete(mPictureUri!!, null, null)
+                    mPictureUri = null
                 }
-            }else{
-                showChooser()
-            }
-
-        }else if(v === sendButton) {
-            val im = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            im.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS)
-
-            val databaseReference = FirebaseDatabase.getInstance().reference
-            val genreRef = databaseReference.child(ContentsPATH).child(mGenre.toString())
-
-            val data = HashMap<String, String>()
-
-            data["uid"] = FirebaseAuth.getInstance().currentUser!!.uid
-
-            val title = titleText.text.toString()
-            val body = bodyText.text.toString()
-
-            if(title.isEmpty()){
-                Snackbar.make(v, "タイトルを入力してください", Snackbar.LENGTH_LONG).show()
                 return
             }
 
-            val sp = PreferenceManager.getDefaultSharedPreferences(this)
-            val name = sp.getString(NameKEY, "")
+            val uri = if(data == null || data.data == null) mPictureUri else data.data
 
-            data["title"] = title
-            data["body"] = body
-            data["name"] = name
-
-            val drawable = imageView.drawable as? BitmapDrawable
-
-            if(drawable != null){
-                val bitmap = drawable.bitmap
-                val baos = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos)
-                val bitmapString = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
-
-                data["image"] = bitmapString
+            val image: Bitmap
+            try{
+                val contentResolver= contentResolver
+                val inputStream = contentResolver.openInputStream(uri!!)
+                image = BitmapFactory.decodeStream(inputStream)
+                inputStream!!.close()
+            }catch(e: Exception){
+                return
             }
-            genreRef.push().setValue(data, this)
-            progressBar.visibility = View.VISIBLE
+
+            val imageWidth = image.width
+            val imageHeight = image.height
+            val scale = Math.min(500.toFloat()/imageWidth, 500.toFloat()/imageHeight)
+
+            val matrix = Matrix()
+            matrix.postScale(scale, scale)
+
+            val resizeImage = Bitmap.createBitmap(image,0,0,imageWidth,imageHeight)
+
+            imageView.setImageBitmap(resizeImage)
+            mPictureUri = null
         }
+    }
+
+    override fun onClick(v: View?) {
+        when(v){
+            imageView -> imageViewOnClick(v as ImageView)
+            sendButton -> sendButtonOnClick(v as Button)
+        }
+    }
+
+    private fun imageViewOnClick(v: ImageView) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                showChooser()
+            } else {
+                requestPermissions( arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSIONS_REQUEST_CODE )
+                return
+            }
+        } else { showChooser() }
+    }
+
+    private fun sendButtonOnClick(v: Button) {
+        val im = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        im.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS)
+
+        val databaseReference = FirebaseDatabase.getInstance().reference
+        val genreRef = databaseReference.child(ContentsPATH).child(mGenre.toString())
+
+        val data = HashMap<String, String>()
+
+        data["uid"] = FirebaseAuth.getInstance().currentUser!!.uid
+
+        val title = titleText.text.toString()
+        val body = bodyText.text.toString()
+
+        if (title.isEmpty()) {
+            Snackbar.make(v, "タイトルを入力してください", Snackbar.LENGTH_LONG).show()
+            return
+        }
+
+        val sp = PreferenceManager.getDefaultSharedPreferences(this)
+        val name = sp.getString(NameKEY, "")
+
+        data["title"] = title
+        data["body"] = body
+        data["name"] = name
+
+        val drawable = imageView.drawable as? BitmapDrawable
+
+        if (drawable != null) {
+            val bitmap = drawable.bitmap
+            val baos = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos)
+            val bitmapString = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
+
+            data["image"] = bitmapString
+        }
+        genreRef.push().setValue(data, this)
+        progressBar.visibility = View.VISIBLE
     }
 
     override fun onComplete(databaseError: DatabaseError?, databaseRef: DatabaseReference) {
         progressBar.visibility = View.GONE
-
-        if (databaseError == null) {
-            finish()
-        } else {
-            Snackbar.make(findViewById(android.R.id.content), "投稿に失敗しました", Snackbar.LENGTH_LONG).show()
-        }
-    }
+        if (databaseError == null) { finish()
+        } else { Snackbar.make(findViewById(android.R.id.content), "投稿に失敗しました", Snackbar.LENGTH_LONG).show()
+        } }
 
      override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
          when(requestCode){
@@ -131,7 +166,6 @@ class QuestionSendActivity : AppCompatActivity(), View.OnClickListener, Database
         galleryIntent.type = "image/*"
         galleryIntent.addCategory(Intent.CATEGORY_OPENABLE)
 
-
         val filename = System.currentTimeMillis().toString() + ".jpg"
         val values = ContentValues()
         values.put(MediaStore.Images.Media.TITLE, filename)
@@ -142,7 +176,7 @@ class QuestionSendActivity : AppCompatActivity(), View.OnClickListener, Database
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPictureUri)
 
         val chooserIntent = Intent.createChooser(galleryIntent, "画像を取得")
-        cameraIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(cameraIntent))
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(cameraIntent))
 
         startActivityForResult(chooserIntent, CHOOSER_REQUEST_CODE)
     }
