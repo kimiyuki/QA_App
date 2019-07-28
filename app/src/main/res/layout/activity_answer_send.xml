@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://shcemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="16dp"
+                tools:context=".AnswerSendActivity">
+
+    <TextView
+            android:text="回答"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/textViewAnswer"
+            android:layout_alignParentBottom="false" android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"/>
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:ems="10"
+            android:id="@+id/editTextAnswer" android:layout_below="@id/textViewAnswer"
+            android:layout_alignParentStart="true" android:maxLines="10"/>
+    <Button
+            android:text="投稿"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/buttonAnswer"
+            android:layout_below="@id/editTextAnswer" android:textColor="@color/colorButtonText"
+            android:layout_alignParentStart="true" android:background="@drawable/custom_button"/>
+    <ProgressBar
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBarAnswer"
+            android:visibility="gone"
+            android:layout_centerInParent="true"/>
+</RelativeLayout>

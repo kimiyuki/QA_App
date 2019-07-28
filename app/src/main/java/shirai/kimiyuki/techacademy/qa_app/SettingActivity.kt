@@ -1,10 +1,12 @@
 package shirai.kimiyuki.techacademy.qa_app
 
 import android.content.Context
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.support.design.widget.Snackbar
+import android.util.Log
 import android.view.inputmethod.InputMethod
 import android.view.inputmethod.InputMethodManager
 import com.google.firebase.auth.FirebaseAuth
@@ -54,9 +56,15 @@ class SettingActivity : AppCompatActivity() {
         }
 
         logoutButton.setOnClickListener{v ->
-            FirebaseAuth.getInstance().signOut()
-            nameText.setText("")
-            Snackbar.make(v, "ログアウトしました。", Snackbar.LENGTH_LONG).show()
+            if(logoutButton.text == "ログイン"){
+                Log.d("hello login", "a")
+                startActivity(Intent(applicationContext, LoginActivity::class.java))
+            }else {
+                FirebaseAuth.getInstance().signOut()
+                nameText.setText("")
+                logoutButton.setText("ログイン")
+                Snackbar.make(v, "ログアウトしました。", Snackbar.LENGTH_LONG).show()
+            }
         }
     }
 }

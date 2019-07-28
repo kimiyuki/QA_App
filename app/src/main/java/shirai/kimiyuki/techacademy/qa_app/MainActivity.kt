@@ -12,7 +12,6 @@ import android.util.Base64
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.ListView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
@@ -35,16 +34,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val values  = dataSnapshot.value as Map<String, String>
             mQuestionArrayList.filter{ dataSnapshot.key.equals(it.questionUid)}
                 .forEach{
+                    it.answers.clear()
                     val answerMap = values["answers"] as Map<String, String>?
-                    if(answerMap != null){
-                        for(key in answerMap.keys){
-                            val temp = answerMap[key] as Map<String, String>
-                            it.answers.add( Answer(
-                                temp["body"] ?: "", temp["name"] ?: "", temp["uid"] ?: "", key )) } } }
+                    if(answerMap == null) return
+                    for(key in answerMap.keys){
+                        val temp = answerMap[key] as Map<String, String>
+                        it.answers.add( Answer(
+                            temp["body"] ?: "", temp["name"] ?: "", temp["uid"] ?: "", key )) } }
             mAdapter.notifyDataSetChanged()
         }
 
         override fun onChildAdded(dataSnapshot: DataSnapshot, position: String?) {
+            Log.d("hello onChildAdd", "onChildAdd")
             val map = dataSnapshot.value as Map<String, String>
             val title = map["title"] ?: ""
             val body = map["body"] ?: ""
@@ -130,7 +131,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val id = item.itemId
         if(id == R.id.action_settings){
             val intent = Intent(applicationContext, SettingActivity::class.java)
-           startActivity(intent)
+            startActivity(intent)
             return true
         }
        return super.onOptionsItemSelected(item)
