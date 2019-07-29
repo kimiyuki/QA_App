@@ -5,11 +5,9 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.ImageButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_question_detail.*
-import kotlinx.android.synthetic.main.list_question_detail.*
 import shirai.kimiyuki.techacademy.qa_app.Model.Answer
 import shirai.kimiyuki.techacademy.qa_app.Model.Question
 
@@ -39,7 +37,7 @@ class QuestionDetailActivity : AppCompatActivity(){
     private val mfavoriteListener = object: ValueEventListener{
         override fun onCancelled(p0: DatabaseError) { }
         override fun onDataChange(datasnapshot: DataSnapshot) {
-            Log.d("hello favorite", datasnapshot.value.toString())
+            datasnapshot.children
         }
     }
 
@@ -66,9 +64,27 @@ class QuestionDetailActivity : AppCompatActivity(){
         mAnswerRef = databaseReference.child(ContentsPATH).
             child(mQuestion.genre.toString()).child(mQuestion.questionUid).child(AnswersPATH)
         mAnswerRef.addChildEventListener(mEventListener)
-
         mFavoriteRef = databaseReference.child(FavoritesPATH)
         mFavoriteRef.addValueEventListener(mfavoriteListener)
+    }
 
+    override fun onResume() {
+        super.onResume()
+        val user = FirebaseAuth.getInstance().currentUser
+        //TODO
+        if(user != null){
+            buttonStar.visibility  = View.VISIBLE
+            // お気に入りのリストを取得して、favボタンの切り替え処理を反映
+            buttonStar.setOnCheckedChangeListener{v, isChecked ->
+                val databaseReference = FirebaseDatabase.getInstance().reference
+                val data = HashMap<String, Any>()
+                data["questionId"] = mQuestion.questionUid
+                data["isFavorite"] = if (buttonStar.isEnabled) 0 else 1
+                data["genre"] = mQuestion.genre.toString()
+                mFavoriteRef.child(user.uid).push().setValue(data)
+            }
+        }else{
+            buttonStar.visibility  = View.GONE
+        }
     }
 }

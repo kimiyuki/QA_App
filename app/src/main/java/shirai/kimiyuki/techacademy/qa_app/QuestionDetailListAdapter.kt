@@ -3,17 +3,14 @@ package shirai.kimiyuki.techacademy.qa_app
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.list_answer.view.bodyTextView
 import kotlinx.android.synthetic.main.list_answer.view.nameTextView
 import kotlinx.android.synthetic.main.list_question_detail.view.*
-import kotlinx.android.synthetic.main.list_question_detail.view.buttonStar
 import shirai.kimiyuki.techacademy.qa_app.Model.Question
 
 class QuestionDetailListAdapter(context: Context, private val mQuestion: Question) : BaseAdapter() {
@@ -39,15 +36,6 @@ class QuestionDetailListAdapter(context: Context, private val mQuestion: Questio
         if(getItemViewType(position)== TYPE_QUESTION){
             cv.bodyTextView.text = mQuestion.body
             cv.nameTextView.text =  mQuestion.name
-            if(user != null) {
-                cv.buttonStar.setOnCheckedChangeListener { v, isChecked ->
-                    val databaseReference = FirebaseDatabase.getInstance().reference
-                    val favoriteRef = databaseReference.child(FavoritesPATH)
-                    val data = HashMap<String, Any>()
-                    data["userId"] = user.uid
-                    data["questionId"] = mQuestion.questionUid
-                    data["isFavorite"] = if (cv.isEnabled) 0 else 1
-                    favoriteRef.push().setValue(data) }}
 
             val bytes = mQuestion.imageBytes
             if(bytes.isNotEmpty()){
