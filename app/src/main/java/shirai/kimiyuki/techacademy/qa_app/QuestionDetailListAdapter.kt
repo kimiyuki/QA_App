@@ -8,14 +8,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.ImageButton
-import android.widget.ToggleButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
-import kotlinx.android.synthetic.main.list_answer.view.*
 import kotlinx.android.synthetic.main.list_answer.view.bodyTextView
 import kotlinx.android.synthetic.main.list_answer.view.nameTextView
-import kotlinx.android.synthetic.main.list_question_detail.*
 import kotlinx.android.synthetic.main.list_question_detail.view.*
 import kotlinx.android.synthetic.main.list_question_detail.view.buttonStar
 import shirai.kimiyuki.techacademy.qa_app.Model.Question
@@ -35,32 +31,22 @@ class QuestionDetailListAdapter(context: Context, private val mQuestion: Questio
 
     override fun getItemViewType(position: Int): Int { return if (position == 0) TYPE_QUESTION else TYPE_ANSWEWR}
 
-    private fun isFavorite(userId:String?):Boolean{
-        //TODO
-//        if(userId == null) return false
-//        FirebaseDatabase.getInstance().reference.child(FavoritePATH)
-        return true
-    }
-
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val lv = if(getItemViewType(position)== TYPE_QUESTION) R.layout.list_question_detail else R.layout.list_answer
         var cv = convertView ?: mLayoutInflater!!.inflate(lv, parent, false)
         val user = FirebaseAuth.getInstance().currentUser
-        val questionId = mQuestion.questionUid
 
         if(getItemViewType(position)== TYPE_QUESTION){
             cv.bodyTextView.text = mQuestion.body
             cv.nameTextView.text =  mQuestion.name
-            //cv.buttonStar.setBackgroundResource(R.drawable.btn_pressed)
-            //cv.buttonStar.isEnabled = (user != null)
             if(user != null) {
                 cv.buttonStar.setOnCheckedChangeListener { v, isChecked ->
                     val databaseReference = FirebaseDatabase.getInstance().reference
                     val favoriteRef = databaseReference.child(FavoritesPATH)
                     val data = HashMap<String, Any>()
-                    data["userId"] = user!!.uid
+                    data["userId"] = user.uid
                     data["questionId"] = mQuestion.questionUid
-                    data["isFavorite"] = if (isFavorite(data["userId"] as String)) 1 else 0
+                    data["isFavorite"] = if (cv.isEnabled) 0 else 1
                     favoriteRef.push().setValue(data) }}
 
             val bytes = mQuestion.imageBytes
