@@ -52,17 +52,16 @@ class QuestionDetailListAdapter(context: Context, private val mQuestion: Questio
             cv.bodyTextView.text = mQuestion.body
             cv.nameTextView.text =  mQuestion.name
             //cv.buttonStar.setBackgroundResource(R.drawable.btn_pressed)
-            if(user == null) cv.buttonStar.isEnabled = false
-            cv.buttonStar.setOnCheckedChangeListener { v, isChecked ->
-                if(user == null) return@setOnCheckedChangeListener
-                val databaseReference = FirebaseDatabase.getInstance().reference
-                val favoriteRef = databaseReference.child(FavoritesPATH)
-                val data = HashMap<String, Any>()
-                data["userId"] = user!!.uid
-                data["questionId"] = mQuestion.questionUid
-                data["isFavorite"] = if (isFavorite(data["userId"] as String))  1 else 0
-                favoriteRef.push().setValue(data)
-            }
+            //cv.buttonStar.isEnabled = (user != null)
+            if(user != null) {
+                cv.buttonStar.setOnCheckedChangeListener { v, isChecked ->
+                    val databaseReference = FirebaseDatabase.getInstance().reference
+                    val favoriteRef = databaseReference.child(FavoritesPATH)
+                    val data = HashMap<String, Any>()
+                    data["userId"] = user!!.uid
+                    data["questionId"] = mQuestion.questionUid
+                    data["isFavorite"] = if (isFavorite(data["userId"] as String)) 1 else 0
+                    favoriteRef.push().setValue(data) }}
 
             val bytes = mQuestion.imageBytes
             if(bytes.isNotEmpty()){
