@@ -25,5 +25,7 @@
             android:layout_height="wrap_content"
             app:srcCompat="?attr/actionModeSelectAllDrawable"
             android:id="@+id/fabQuestionDetail"
-            android:layout_alignParentEnd="true" android:layout_alignParentBottom="true" android:clickable="true"/>
+            android:layout_alignParentEnd="true" android:layout_alignParentBottom="true" android:clickable="true"
+            android:layout_margin="20dp" android:layout_marginTop="30dp" android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp" android:layout_marginBottom="30dp"/>
 </RelativeLayout>

@@ -112,10 +112,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    private fun <K,V>  getFavs(uid:String):List<Map<K,V>>?{
+        val userFavoriteRef = FirebaseDatabase.getInstance().reference.child(FavoritesPATH).child(uid)
+        var map:List<Map<K,V>>? = null
+        userFavoriteRef.addListenerForSingleValueEvent(object: ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) { }
+            override fun onDataChange(s: DataSnapshot) {
+                s.children.map{
+                    val m = it.value as Map<String, String>
+                    Log.d("hello qq", """${"-LkknkCDonG1hesGg15w" == m["questionId"]}""")
+                    m
+                }
+                //map  = s.children as List<Map<K, V>>
+            }
+        })
+        return map
+    }
+
     override fun onResume() {
         super.onResume()
         //show default item in the Menu
         if(mGenre == 0){ onNavigationItemSelected(nav_view.menu.getItem(0)) }
+        val user =FirebaseAuth.getInstance().currentUser
+        title = user?.uid ?: "no user"
+        if(user != null) getFavs<String, String>(user.uid)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

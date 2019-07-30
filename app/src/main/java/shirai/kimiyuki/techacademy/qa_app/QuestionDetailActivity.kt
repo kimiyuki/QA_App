@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthSettings
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_question_detail.*
 import shirai.kimiyuki.techacademy.qa_app.Model.Answer
@@ -16,6 +17,7 @@ class QuestionDetailActivity : AppCompatActivity(){
     private lateinit var mAdapter: QuestionDetailListAdapter
     private lateinit var mAnswerRef: DatabaseReference
     private lateinit var mFavoriteRef: DatabaseReference
+    private val databaseReference = FirebaseDatabase.getInstance().reference
 
     private val mEventListener = object: ChildEventListener{
         override fun onCancelled(p0: DatabaseError) { }
@@ -32,13 +34,6 @@ class QuestionDetailActivity : AppCompatActivity(){
             mAdapter.notifyDataSetChanged()
         }
 
-    }
-
-    private val mfavoriteListener = object: ValueEventListener{
-        override fun onCancelled(p0: DatabaseError) { }
-        override fun onDataChange(datasnapshot: DataSnapshot) {
-            datasnapshot.children
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,31 +55,49 @@ class QuestionDetailActivity : AppCompatActivity(){
                 startActivity(intent)
             }
         }
-        val databaseReference = FirebaseDatabase.getInstance().reference
         mAnswerRef = databaseReference.child(ContentsPATH).
             child(mQuestion.genre.toString()).child(mQuestion.questionUid).child(AnswersPATH)
         mAnswerRef.addChildEventListener(mEventListener)
-        mFavoriteRef = databaseReference.child(FavoritesPATH)
-        mFavoriteRef.addValueEventListener(mfavoriteListener)
+    }
+
+    private fun hasFav(uid:String, qid:String):Boolean{
+        val userFavoriteRef = FirebaseDatabase.getInstance().reference.child(FavoritesPATH).child(uid)
+        var ret =  true
+        userFavoriteRef.addListenerForSingleValueEvent(object: ValueEventListener{
+            override fun onCancelled(p0: DatabaseError) { }
+            override fun onDataChange(s: DataSnapshot) {
+                ret = s.children.any{
+                    val m = it.value as Map<String, String>
+                    qid == m["questionId"] } }
+        })
+        return ret
     }
 
     override fun onResume() {
         super.onResume()
         val user = FirebaseAuth.getInstance().currentUser
-        //TODO
-        if(user != null){
-            buttonStar.visibility  = View.VISIBLE
-            // お気に入りのリストを取得して、favボタンの切り替え処理を反映
-            buttonStar.setOnCheckedChangeListener{v, isChecked ->
-                val databaseReference = FirebaseDatabase.getInstance().reference
+        if(user == null){
+            buttonStar.visibility  = View.GONE
+            return@onResume
+        }
+
+        buttonStar.visibility  = View.VISIBLE
+        if(hasFav(user!!.uid, mQuestion.uid)){
+            buttonStar.isChecked = true
+        }
+        mFavoriteRef = FirebaseDatabase.getInstance().reference.child(FavoritesPATH)
+        // お気に入りのリストを取得して、favボタンのり替え処理を反映
+        buttonStar.setOnCheckedChangeListener{v, isChecked ->
+            if (!isChecked){
+               //Delete fav
+                //mFavoriteRef.child(user.uid)
+            }else {
                 val data = HashMap<String, Any>()
                 data["questionId"] = mQuestion.questionUid
-                data["isFavorite"] = if (buttonStar.isEnabled) 0 else 1
+                data["isFavorite"] = if (isChecked) 1 else 0
                 data["genre"] = mQuestion.genre.toString()
                 mFavoriteRef.child(user.uid).push().setValue(data)
             }
-        }else{
-            buttonStar.visibility  = View.GONE
         }
     }
 }
