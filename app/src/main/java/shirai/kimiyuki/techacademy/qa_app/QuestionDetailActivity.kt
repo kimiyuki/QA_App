@@ -90,12 +90,12 @@ class QuestionDetailActivity : AppCompatActivity(){
         userFavoriteRef.addListenerForSingleValueEvent(object: ValueEventListener{
             override fun onCancelled(p0: DatabaseError) { }
             override fun onDataChange(s: DataSnapshot) {
-                val ret = s.children.filter(){
+                val ret = s.children.any {
                     val m = it.value as Map<String, String>
                     Log.d("hello fav", m["questionId"])
                     mQuestion.questionUid == m["questionId"]
                 }
-                if(ret.size > 0){
+                if(ret){
                     Log.d("hello yes", "fav")
                     buttonStar.isChecked = true
                 }
