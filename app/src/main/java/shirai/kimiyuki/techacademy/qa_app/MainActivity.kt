@@ -25,8 +25,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var mDatabaseReference: DatabaseReference
     private lateinit var mQuestionArrayList: ArrayList<Question>
     private lateinit var mAdapter: QuestionsListAdapter
-    private var mGenreRef: DatabaseReference? = null
 
+
+    //for questions list at a genre
+    private var mGenreRef: DatabaseReference? = null
     private val mEventListener = object: ChildEventListener {
         override fun onCancelled(p0: DatabaseError) { }
         override fun onChildMoved(p0: DataSnapshot, p1: String?) { }
@@ -46,30 +48,35 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         override fun onChildAdded(dataSnapshot: DataSnapshot, position: String?) {
             Log.d("hello onChildAdd", "onChildAdd")
-            val map = dataSnapshot.value as Map<String, String>
-            val title = map["title"] ?: ""
-            val body = map["body"] ?: ""
-            val name = map["name"] ?: ""
-            val uid = map["uid"] ?: ""
-            val imageString = map["image"] ?: ""
-            val bytes = if (imageString.isNotEmpty())  Base64.decode(imageString, Base64.DEFAULT)  else  byteArrayOf()
-
-            val answerArrayList = ArrayList<Answer>()
-            val answerMap = map["answers"] as Map<String, String>?
-            if (answerMap != null) {
-                for (key in answerMap.keys) {
-                    val temp = answerMap[key] as Map<String, String>
-                    val answerBody = temp["body"] ?: ""
-                    val answerName = temp["name"] ?: ""
-                    val answerUid = temp["uid"] ?: ""
-                    val answer = Answer(answerBody, answerName, answerUid, key)
-                    answerArrayList.add(answer) } }
-
-            val question = Question(title, body, name, uid, dataSnapshot.key ?: "", mGenre, bytes, answerArrayList)
+            val question = questionFactory(dataSnapshot)
             mQuestionArrayList.add(question)
             mAdapter.notifyDataSetChanged()
         }
         override fun onChildRemoved(p0: DataSnapshot) {}
+    }
+
+    private fun questionFactory(dataSnapshot: DataSnapshot): Question {
+        val map = dataSnapshot.value as Map<String, String>
+        val title = map["title"] ?: ""
+        val body = map["body"] ?: ""
+        val name = map["name"] ?: ""
+        val uid = map["uid"] ?: ""
+        val imageString = map["image"] ?: ""
+        val bytes = if (imageString.isNotEmpty()) Base64.decode(imageString, Base64.DEFAULT) else byteArrayOf()
+
+        val answerArrayList = ArrayList<Answer>()
+        val answerMap = map["answers"] as Map<String, String>?
+        if (answerMap != null) {
+            for (key in answerMap.keys) {
+                val temp = answerMap[key] as Map<String, String>
+                val answerBody = temp["body"] ?: ""
+                val answerName = temp["name"] ?: ""
+                val answerUid = temp["uid"] ?: ""
+                val answer = Answer(answerBody, answerName, answerUid, key)
+                answerArrayList.add(answer)
+            }
+        }
+        return Question(title, body, name, uid, dataSnapshot.key ?: "", mGenre, bytes, answerArrayList)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,21 +119,39 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun <K,V>  getFavs(uid:String):List<Map<K,V>>?{
-        val userFavoriteRef = FirebaseDatabase.getInstance().reference.child(FavoritesPATH).child(uid)
-        var map:List<Map<K,V>>? = null
+    private fun getFavs(){
+        val user = FirebaseAuth.getInstance().currentUser
+        if(user == null) return
+        val userFavoriteRef = mDatabaseReference.child(FavoritesPATH).child(user!!.uid)
         userFavoriteRef.addListenerForSingleValueEvent(object: ValueEventListener{
             override fun onCancelled(p0: DatabaseError) { }
             override fun onDataChange(s: DataSnapshot) {
-                s.children.map{
-                    val m = it.value as Map<String, String>
-                    Log.d("hello qq", """${"-LkknkCDonG1hesGg15w" == m["questionId"]}""")
-                    m
+                mQuestionArrayList.clear()
+                s.children.forEach{
+                    val q = it.value as Map<String, String>
+                    val qid = q["questionId"]
+                    val genre = q["genre"]
+                    Log.d("hello qid", qid)
+                    mDatabaseReference.child(ContentsPATH).child(genre!!).orderByChild("questionId")
+                        .addListenerForSingleValueEvent(object: ValueEventListener{
+                            override fun onCancelled(p0: DatabaseError) { }
+                            override fun onDataChange(s: DataSnapshot) {
+                                s.children.filter {
+                                    Log.d("hello key", it.key)
+                                    it.key == qid
+                                }.forEach{
+                                    Log.d("hello processed", it.key)
+                                    val q = questionFactory(it)
+                                    Log.d("hello q", q.toString())
+                                    mQuestionArrayList.add(q)
+                                }
+                                mAdapter.setQuestionArrayList(mQuestionArrayList)
+                                mAdapter.notifyDataSetChanged()
+                            }
+                        })
                 }
-                //map  = s.children as List<Map<K, V>>
             }
         })
-        return map
     }
 
     override fun onResume() {
@@ -135,7 +160,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if(mGenre == 0){ onNavigationItemSelected(nav_view.menu.getItem(0)) }
         val user =FirebaseAuth.getInstance().currentUser
         title = user?.uid ?: "no user"
-        if(user != null) getFavs<String, String>(user.uid)
+
+        //login or not
+        if(user == null){
+            nav_view.menu.removeItem(R.id.nav_fav)
+        }else {
+            Log.d("hello nav", "he")
+            //getFavs<String, String>(user.uid)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -158,20 +190,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        var isFav:Boolean = false
         when(item.itemId){
             R.id.nav_hobby -> { toolbar.title = "趣味"; mGenre = 1}
             R.id.nav_life -> { toolbar.title = "生活"; mGenre = 2}
             R.id.nav_health -> { toolbar.title = "健康"; mGenre = 3}
             R.id.nav_compter -> { toolbar.title = "コンピューター"; mGenre = 4}
+            R.id.nav_fav -> { toolbar.title = "お気に入り"; isFav = true}
         }
         drawer_layout.closeDrawer(GravityCompat.START)
 
         mQuestionArrayList.clear()
         mAdapter.setQuestionArrayList(mQuestionArrayList)
         listView.adapter = mAdapter
-        if(mGenreRef != null) mGenreRef!!.removeEventListener(mEventListener)
-        mGenreRef = mDatabaseReference.child(ContentsPATH).child(mGenre.toString())
-        mGenreRef!!.addChildEventListener(mEventListener)
+
+        if (mGenreRef != null) {
+            mGenreRef!!.removeEventListener(mEventListener)
+        }
+        if (!isFav) {
+            mGenreRef = mDatabaseReference.child(ContentsPATH).child(mGenre.toString())
+            mGenreRef!!.addChildEventListener(mEventListener)
+        } else {
+            Log.d("hello qqq", "fav")
+            getFavs()
+        }
 
         return true
     }
