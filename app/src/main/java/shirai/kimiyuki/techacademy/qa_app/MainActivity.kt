@@ -17,6 +17,7 @@ import com.google.firebase.database.*
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
+import kotlinx.android.synthetic.main.content_main.*
 import shirai.kimiyuki.techacademy.qa_app.Model.Answer
 import shirai.kimiyuki.techacademy.qa_app.Model.Question
 
