@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.list_answer.view.bodyTextView
 import kotlinx.android.synthetic.main.list_answer.view.nameTextView
 import kotlinx.android.synthetic.main.list_question_detail.view.*
@@ -31,10 +30,9 @@ class QuestionDetailListAdapter(context: Context, private val mQuestion: Questio
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val lv = if(getItemViewType(position)== TYPE_QUESTION) R.layout.list_question_detail else R.layout.list_answer
         var cv = convertView ?: mLayoutInflater!!.inflate(lv, parent, false)
-        val user = FirebaseAuth.getInstance().currentUser
 
         if(getItemViewType(position)== TYPE_QUESTION){
-            cv.bodyTextView.text = mQuestion.body
+            cv.bodyTextView.text = mQuestion.title + "\n" + mQuestion.body
             cv.nameTextView.text =  mQuestion.name
 
             val bytes = mQuestion.imageBytes

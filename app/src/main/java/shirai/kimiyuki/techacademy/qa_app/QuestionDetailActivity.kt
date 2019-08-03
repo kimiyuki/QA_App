@@ -11,11 +11,17 @@ import kotlinx.android.synthetic.main.activity_question_detail.*
 import shirai.kimiyuki.techacademy.qa_app.Model.Answer
 import shirai.kimiyuki.techacademy.qa_app.Model.Question
 
-class QuestionDetailActivity : AppCompatActivity(){
+class QuestionDetailActivity() : AppCompatActivity(){
     private lateinit var mQuestion: Question
     private lateinit var mAdapter: QuestionDetailListAdapter
     private lateinit var mAnswerRef: DatabaseReference
     private val databaseReference = FirebaseDatabase.getInstance().reference
+
+    init{
+//        val fav = Fav()
+//        fav.toggleFav()
+//        fav.updateList()
+    }
 
     private val mEventListener = object: ChildEventListener{
         override fun onCancelled(p0: DatabaseError) { }
@@ -58,54 +64,9 @@ class QuestionDetailActivity : AppCompatActivity(){
         mAnswerRef.addChildEventListener(mEventListener)
     }
 
-    private fun toggleFavData(){
-        val user = FirebaseAuth.getInstance().currentUser
-        if(user == null)return
-        val userFavoriteRef = databaseReference.child(FavoritesPATH).child(user!!.uid)
-        userFavoriteRef.addListenerForSingleValueEvent(object: ValueEventListener{
-            override fun onCancelled(p0: DatabaseError) { }
-            override fun onDataChange(s: DataSnapshot) {
-                val ret = s.children.filter(){
-                    val m = it.value as Map<String, String>
-                    mQuestion.questionUid == m["questionId"] }
-                Log.d("hello dataChange", "aaa")
-                if(ret.size == 0){
-                    //create
-                    val data = HashMap<String, String>()
-                    data["genre"] = mQuestion.genre.toString()
-                    data["questionId"] = mQuestion.questionUid.toString()
-                    data["questionTitle"] = mQuestion.title.toString()
-                    userFavoriteRef.push().setValue(data)
-                }else{
-                    //remove
-                    userFavoriteRef.child(ret[0].key!!).removeValue()
-                }
-            }
-        })
-    }
     private fun showFavData() {
-        val user = FirebaseAuth.getInstance().currentUser
-        if(user == null)return
-        val userFavoriteRef = databaseReference.child(FavoritesPATH).child(user!!.uid)
-        userFavoriteRef.addListenerForSingleValueEvent(object: ValueEventListener{
-            override fun onCancelled(p0: DatabaseError) { }
-            override fun onDataChange(s: DataSnapshot) {
-                val ret = s.children.any {
-                    val m = it.value as Map<String, String>
-                    Log.d("hello fav", m["questionId"])
-                    mQuestion.questionUid == m["questionId"]
-                }
-                if(ret){
-                    Log.d("hello yes", "fav")
-                    buttonStar.isChecked = true
-                }
-                buttonStar.setOnCheckedChangeListener{v, isChecked ->
-                    Log.d("hello toggling", isChecked.toString())
-                    toggleFavData()
-                }
-            }
-        })
-
+        val f = Qa_App.favGenreQuestions[mQuestion.genre]?.any{ it["questionId"] == mQuestion.questionUid}
+        if(f == true) buttonStar.isChecked = true
     }
 
     override fun onResume() {
@@ -117,9 +78,43 @@ class QuestionDetailActivity : AppCompatActivity(){
         }
         buttonStar.visibility  = View.VISIBLE
         showFavData()
+        buttonStar.setOnCheckedChangeListener{v, isChecked ->
+            Log.d("hello toggling", isChecked.toString())
+            toggleFavData(mQuestion, databaseReference)
+        }
     }
 
-    override fun onPause() {
-        super.onPause()
-    }
+}
+
+fun toggleFavData(mQuestion:Question, databaseReference: DatabaseReference){
+    val user = FirebaseAuth.getInstance().currentUser
+    if(user == null)return
+    val userFavoriteRef = databaseReference.child(FavoritesPATH).child(user!!.uid)
+    userFavoriteRef.addListenerForSingleValueEvent(object: ValueEventListener{
+        override fun onCancelled(p0: DatabaseError) { }
+        override fun onDataChange(s: DataSnapshot) {
+            val ret = s.children.
+                filter(){
+                    val m = it.value as Map<String, String>
+                    mQuestion.questionUid == m["questionId"] }
+            if(ret.isEmpty()){
+                //create
+                val data = HashMap<String, String>()
+                data["genre"] = mQuestion.genre.toString()
+                data["questionId"] = mQuestion.questionUid.toString()
+                data["questionTitle"] = mQuestion.title.toString()
+                userFavoriteRef.push().setValue(data).addOnCompleteListener {
+                    Qa_App.favGenreQuestions[mQuestion.genre]?.add(data)
+                    Log.d("hello add", Qa_App.favGenreQuestions[mQuestion.genre]?.size.toString())
+                }
+            }else{
+                //remove
+                userFavoriteRef.child(ret[0].key!!).removeValue().addOnCompleteListener {
+                    Qa_App.favGenreQuestions[mQuestion.genre]?.removeIf {
+                        it["questionId"] == mQuestion.questionUid }
+                    Log.d("hello remove", Qa_App.favGenreQuestions[mQuestion.genre]?.size.toString())
+                }
+            }
+        }
+    })
 }

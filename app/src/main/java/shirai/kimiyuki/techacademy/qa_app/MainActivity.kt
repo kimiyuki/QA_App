@@ -49,14 +49,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         override fun onChildAdded(dataSnapshot: DataSnapshot, position: String?) {
             Log.d("hello onChildAdd", "onChildAdd")
-            val question = questionFactory(dataSnapshot)
+            val question = makeQuestionBySnap(dataSnapshot)
             mQuestionArrayList.add(question)
             mAdapter.notifyDataSetChanged()
         }
         override fun onChildRemoved(p0: DataSnapshot) {}
     }
 
-    private fun questionFactory(dataSnapshot: DataSnapshot): Question {
+    private fun makeQuestionBySnap(dataSnapshot: DataSnapshot): Question {
         val map = dataSnapshot.value as Map<String, String>
         val title = map["title"] ?: ""
         val body = map["body"] ?: ""
@@ -102,8 +102,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         val toggle = ActionBarDrawerToggle(this, drawer_layout, toolbar, R.string.app_name, R.string.app_name)
-        Log.d("hello", "${toggle is DrawerLayout.DrawerListener}")
-        Log.d("hello", "${toggle::class}")
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         nav_view.setNavigationItemSelectedListener(this)
@@ -114,61 +112,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         mAdapter.notifyDataSetChanged()
 
         listView.setOnItemClickListener{parent, view, position, id ->
+            Log.d("hello p", position.toString())
             val intent  = Intent(applicationContext, QuestionDetailActivity::class.java)
             intent.putExtra("question", mQuestionArrayList[position])
             startActivity(intent)
         }
-
-    }
-
-    private fun getFavs(){
-        val user = FirebaseAuth.getInstance().currentUser
-        if(user == null) return
-        val userFavoriteRef = mDatabaseReference.child(FavoritesPATH).child(user!!.uid)
-        userFavoriteRef.addListenerForSingleValueEvent(object: ValueEventListener{
-            override fun onCancelled(p0: DatabaseError) { }
-            override fun onDataChange(s: DataSnapshot) {
-                mQuestionArrayList.clear()
-                s.children.forEach{
-                    val q = it.value as Map<String, String>
-                    val qid = q["questionId"]
-                    val genre = q["genre"]
-                    Log.d("hello qid", qid)
-                    mDatabaseReference.child(ContentsPATH).child(genre!!).orderByChild("questionId")
-                        .addListenerForSingleValueEvent(object: ValueEventListener{
-                            override fun onCancelled(p0: DatabaseError) { }
-                            override fun onDataChange(s: DataSnapshot) {
-                                s.children.filter {
-                                    Log.d("hello key", it.key)
-                                    it.key == qid
-                                }.forEach{
-                                    Log.d("hello processed", it.key)
-                                    val q = questionFactory(it)
-                                    Log.d("hello q", q.toString())
-                                    mQuestionArrayList.add(q)
-                                }
-                                mAdapter.setQuestionArrayList(mQuestionArrayList)
-                                mAdapter.notifyDataSetChanged()
-                            }
-                        })
-                }
-            }
-        })
     }
 
     override fun onResume() {
         super.onResume()
-        //show default item in the Menu
-        if(mGenre == 0){ onNavigationItemSelected(nav_view.menu.getItem(0)) }
         val user =FirebaseAuth.getInstance().currentUser
-        title = user?.uid ?: "no user"
-
-        //login or not
-        if(user == null){
-            nav_view.menu.removeItem(R.id.nav_fav)
-        }else {
-            Log.d("hello nav", "he")
-            //getFavs<String, String>(user.uid)
+        nav_view.menu.findItem(R.id.nav_fav).setVisible(user != null)
+        if(mGenre == 0){
+            onNavigationItemSelected(nav_view.menu.findItem(R.id.nav_hobby))
+        }else{
+            onNavigationItemSelected(nav_view.menu.getItem(mGenre-1))
         }
     }
 
@@ -192,13 +150,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        var isFav:Boolean = false
-        when(item.itemId){
-            R.id.nav_hobby -> { toolbar.title = "趣味"; mGenre = 1}
-            R.id.nav_life -> { toolbar.title = "生活"; mGenre = 2}
-            R.id.nav_health -> { toolbar.title = "健康"; mGenre = 3}
-            R.id.nav_compter -> { toolbar.title = "コンピューター"; mGenre = 4}
-            R.id.nav_fav -> { toolbar.title = "お気に入り"; isFav = true}
+        when (item.itemId) {
+            R.id.nav_hobby -> {
+                toolbar.title = "趣味"; mGenre = 1
+            }
+            R.id.nav_life -> {
+                toolbar.title = "生活"; mGenre = 2
+            }
+            R.id.nav_health -> {
+                toolbar.title = "健康"; mGenre = 3
+            }
+            R.id.nav_compter -> {
+                toolbar.title = "コンピューター"; mGenre = 4
+            }
+            R.id.nav_fav -> {
+                val intent = Intent(this, FavActivity::class.java)
+                startActivity(intent)
+            }
         }
         drawer_layout.closeDrawer(GravityCompat.START)
 
@@ -209,14 +177,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (mGenreRef != null) {
             mGenreRef!!.removeEventListener(mEventListener)
         }
-        if (!isFav) {
-            mGenreRef = mDatabaseReference.child(ContentsPATH).child(mGenre.toString())
-            mGenreRef!!.addChildEventListener(mEventListener)
-        } else {
-            Log.d("hello qqq", "fav")
-            getFavs()
-        }
-
+        mGenreRef = mDatabaseReference.child(ContentsPATH).child(mGenre.toString())
+        mGenreRef!!.addChildEventListener(mEventListener)
         return true
     }
 
