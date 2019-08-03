@@ -24,7 +24,7 @@ class FavListAdapter(val context: Context): BaseExpandableListAdapter() {
         var cv = convertView ?: mLayoutInflater.inflate(R.layout.item_fav_parent, null)
         val title = cv!!.findViewById<TextView>(R.id.textViewFavListParent)
         val grp = getGroup(groupPosition) as MutableList<Map<String, String>>
-        title.text = grp[0]["genre"]
+        title.text = Qa_App.FavoriteMap[grp[0]["genre"]!!.toInt()]
         return cv
     }
 

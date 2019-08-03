@@ -152,16 +152,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_hobby -> {
-                toolbar.title = "趣味"; mGenre = 1
+                toolbar.title = Qa_App.FavoriteMap[1]; mGenre = 1
             }
             R.id.nav_life -> {
-                toolbar.title = "生活"; mGenre = 2
+                toolbar.title = Qa_App.FavoriteMap[2]; mGenre = 2
             }
             R.id.nav_health -> {
-                toolbar.title = "健康"; mGenre = 3
+                toolbar.title = Qa_App.FavoriteMap[3]; mGenre = 3
             }
             R.id.nav_compter -> {
-                toolbar.title = "コンピューター"; mGenre = 4
+                toolbar.title = Qa_App.FavoriteMap[4]; mGenre = 4
             }
             R.id.nav_fav -> {
                 val intent = Intent(this, FavActivity::class.java)

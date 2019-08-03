@@ -12,6 +12,7 @@ class Qa_App: Application() {
     companion object {
         var favQuestions: MutableList<Map<String, String>> = mutableListOf()
         var favGenreQuestions: MutableMap<Int, MutableList<Map<String,  String>>> = mutableMapOf()
+        val FavoriteMap = mapOf(Pair(1, "趣味"), Pair(2, "生活"), Pair(3, "健康"), Pair(4, "コンピュータ"))
     }
     override fun onCreate() {
         super.onCreate()

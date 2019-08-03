@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">QA_App</string>
     <string name="action_settings">Settings</string>
+    <string name="nav_hobby">趣味</string>
+    <string name="nav_life">生活</string>
+    <string name="nav_health">健康</string>
+    <string name="nav_computer">コンピュータ</string>
+    <string name="nav_favorite">お気に入り</string>
 </resources>
