@@ -30,11 +30,11 @@ class FavListAdapter(val context: Context): BaseExpandableListAdapter() {
 
     override fun getChildrenCount(groupPosition: Int): Int {
         //groupPosition == mGenre?
-        return Qa_App.favGenreQuestions[groupPosition+1]!!.size
+        return (getGroup(groupPosition) as MutableList<Any>).size
     }
 
     override fun getChild(groupPosition: Int, childPosition: Int): Any {
-        return Qa_App.favGenreQuestions[groupPosition+1]!![childPosition] as Map<String, String>
+        return (getGroup(groupPosition) as MutableList<Any>)!![childPosition] as Map<String, String>
     }
 
     override fun getGroupId(groupPosition: Int): Long {
