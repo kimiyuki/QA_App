@@ -45,6 +45,7 @@ class QuestionDetailActivity() : AppCompatActivity(){
         setContentView(R.layout.activity_question_detail)
 
         mQuestion = intent.extras?.get("question") as Question
+        title = Qa_App.FavoriteMap[mQuestion.genre]
         mAdapter = QuestionDetailListAdapter(this, mQuestion)
         listViewDetails.adapter = mAdapter
         mAdapter.notifyDataSetChanged()
@@ -65,7 +66,8 @@ class QuestionDetailActivity() : AppCompatActivity(){
     }
 
     private fun showFavData() {
-        val f = Qa_App.favGenreQuestions[mQuestion.genre]?.any{ it["questionId"] == mQuestion.questionUid}
+        val f = Qa_App.favGenreQuestions[mQuestion.genre]?.any{
+            it["questionId"] == mQuestion.questionUid}
         if(f == true) buttonStar.isChecked = true
     }
 
@@ -80,16 +82,16 @@ class QuestionDetailActivity() : AppCompatActivity(){
         showFavData()
         buttonStar.setOnCheckedChangeListener{v, isChecked ->
             Log.d("hello toggling", isChecked.toString())
-            toggleFavData(mQuestion, databaseReference)
+            toggleFavData(mQuestion)
         }
     }
 
 }
 
-fun toggleFavData(mQuestion:Question, databaseReference: DatabaseReference){
+fun toggleFavData(mQuestion:Question){
     val user = FirebaseAuth.getInstance().currentUser
     if(user == null)return
-    val userFavoriteRef = databaseReference.child(FavoritesPATH).child(user!!.uid)
+    val userFavoriteRef = FirebaseDatabase.getInstance().reference.child(FavoritesPATH).child(user!!.uid)
     userFavoriteRef.addListenerForSingleValueEvent(object: ValueEventListener{
         override fun onCancelled(p0: DatabaseError) { }
         override fun onDataChange(s: DataSnapshot) {

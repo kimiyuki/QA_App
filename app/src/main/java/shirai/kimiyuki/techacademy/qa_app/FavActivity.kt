@@ -59,7 +59,7 @@ class FavActivity() : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val m = snapshot.value as Map<String, Any>
                 val mm = m[questionId] as Map<String, Any>
-                val q = makeQuestionBySnap(snapshot.key!!, mm, genre!!.toInt())
+                val q = makeQuestionBySnap(m.keys.first(), mm, genre!!.toInt())
                 Log.d("hello q", "${q.title} : ${q.name}")
                 callback(q!!)
             }

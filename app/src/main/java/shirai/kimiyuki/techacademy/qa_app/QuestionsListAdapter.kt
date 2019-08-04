@@ -3,7 +3,6 @@ package shirai.kimiyuki.techacademy.qa_app
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,8 +10,6 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ToggleButton
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.android.synthetic.main.activity_question_detail.view.*
-import kotlinx.android.synthetic.main.list_question_detail.view.*
 import kotlinx.android.synthetic.main.list_questions.view.*
 import shirai.kimiyuki.techacademy.qa_app.Model.Question
 
@@ -64,7 +61,10 @@ class QuestionsListAdapter(context: Context):BaseAdapter() {
             holder.star.visibility = View.GONE
         }else {
             holder.star.visibility = View.VISIBLE
-            if(isFav(mQ)) holder.star.isChecked = true
+            holder.star.isChecked = isFav(mQ)
+            holder.star.setOnCheckedChangeListener{ _, _ ->
+                toggleFavData(mQ)
+            }
         }
         v.tag = holder
         return v
