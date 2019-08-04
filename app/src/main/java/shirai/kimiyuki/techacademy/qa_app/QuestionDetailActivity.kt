@@ -104,8 +104,13 @@ fun toggleFavData(mQuestion:Question, databaseReference: DatabaseReference){
                 data["questionId"] = mQuestion.questionUid.toString()
                 data["questionTitle"] = mQuestion.title.toString()
                 userFavoriteRef.push().setValue(data).addOnCompleteListener {
-                    Qa_App.favGenreQuestions[mQuestion.genre]?.add(data)
-                    Log.d("hello add", Qa_App.favGenreQuestions[mQuestion.genre]?.size.toString())
+                    if (Qa_App.favGenreQuestions[mQuestion.genre] == null) {
+                        Qa_App.favGenreQuestions.put(mQuestion.genre, mutableListOf(data))
+                        Log.d("hello fav", Qa_App.favGenreQuestions.toString())
+                    } else {
+                        Qa_App.favGenreQuestions[mQuestion.genre]?.add(data)
+                        Log.d("hello add", Qa_App.favGenreQuestions[mQuestion.genre]?.size.toString())
+                    }
                 }
             }else{
                 //remove

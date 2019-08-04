@@ -36,6 +36,7 @@ class QuestionsListAdapter(context: Context):BaseAdapter() {
     }
 
     private fun isFav(mQ:Question):Boolean{
+        if (!Qa_App.favGenreQuestions.containsKey(mQ.genre)) return false
         return Qa_App.favGenreQuestions[mQ.genre]!!.any{
             mQ.questionUid == it["questionId"]
         }
