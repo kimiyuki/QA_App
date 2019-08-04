@@ -18,8 +18,33 @@ import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
+
 import shirai.kimiyuki.techacademy.qa_app.Model.Answer
 import shirai.kimiyuki.techacademy.qa_app.Model.Question
+
+fun makeQuestionBySnap(k:String, m:Map<String,  Any>, mGenre:Int): Question {
+    val title = m["title"] as String ?: ""
+    val body = m["body"] as String ?: "" as String
+    val name = m["name"] as String ?: "" as String
+    val uid = m["uid"] as String ?: "" as String
+    val imageString = (m["image"] ?: "") as String
+    val bytes = if (imageString.isNotEmpty()) Base64.decode(imageString, Base64.DEFAULT) else byteArrayOf()
+
+    val answerArrayList = ArrayList<Answer>()
+    val answerMap = m["answers"] as Map<String, String>?
+    if (answerMap != null) {
+        for (key in answerMap.keys) {
+            val temp = answerMap[key] as Map<String, String>
+            val answerBody = temp["body"] ?: ""
+            val answerName = temp["name"] ?: ""
+            val answerUid = temp["uid"] ?: ""
+            val answer = Answer(answerBody, answerName, answerUid, key)
+            answerArrayList.add(answer)
+        }
+    }
+    return Question(title=title, body=body, name = name, uid=uid, questionUid = k,
+        genre=mGenre, bytes = bytes, answers = answerArrayList)
+}
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var mGenre = 0
@@ -49,35 +74,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         override fun onChildAdded(dataSnapshot: DataSnapshot, position: String?) {
             Log.d("hello onChildAdd", "onChildAdd")
-            val question = makeQuestionBySnap(dataSnapshot)
+            val m = dataSnapshot.value as Map<String, String>
+            val question = makeQuestionBySnap(dataSnapshot.key!!, m, mGenre)
             mQuestionArrayList.add(question)
             mAdapter.notifyDataSetChanged()
         }
         override fun onChildRemoved(p0: DataSnapshot) {}
-    }
-
-    private fun makeQuestionBySnap(dataSnapshot: DataSnapshot): Question {
-        val map = dataSnapshot.value as Map<String, String>
-        val title = map["title"] ?: ""
-        val body = map["body"] ?: ""
-        val name = map["name"] ?: ""
-        val uid = map["uid"] ?: ""
-        val imageString = map["image"] ?: ""
-        val bytes = if (imageString.isNotEmpty()) Base64.decode(imageString, Base64.DEFAULT) else byteArrayOf()
-
-        val answerArrayList = ArrayList<Answer>()
-        val answerMap = map["answers"] as Map<String, String>?
-        if (answerMap != null) {
-            for (key in answerMap.keys) {
-                val temp = answerMap[key] as Map<String, String>
-                val answerBody = temp["body"] ?: ""
-                val answerName = temp["name"] ?: ""
-                val answerUid = temp["uid"] ?: ""
-                val answer = Answer(answerBody, answerName, answerUid, key)
-                answerArrayList.add(answer)
-            }
-        }
-        return Question(title, body, name, uid, dataSnapshot.key ?: "", mGenre, bytes, answerArrayList)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -151,18 +153,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.nav_hobby -> {
-                toolbar.title = Qa_App.FavoriteMap[1]; mGenre = 1
-            }
-            R.id.nav_life -> {
-                toolbar.title = Qa_App.FavoriteMap[2]; mGenre = 2
-            }
-            R.id.nav_health -> {
-                toolbar.title = Qa_App.FavoriteMap[3]; mGenre = 3
-            }
-            R.id.nav_compter -> {
-                toolbar.title = Qa_App.FavoriteMap[4]; mGenre = 4
-            }
+            R.id.nav_hobby -> { toolbar.title = Qa_App.FavoriteMap[1]; mGenre = 1 }
+            R.id.nav_life -> { toolbar.title = Qa_App.FavoriteMap[2]; mGenre = 2 }
+            R.id.nav_health -> { toolbar.title = Qa_App.FavoriteMap[3]; mGenre = 3 }
+            R.id.nav_compter -> { toolbar.title = Qa_App.FavoriteMap[4]; mGenre = 4 }
             R.id.nav_fav -> {
                 val intent = Intent(this, FavActivity::class.java)
                 startActivity(intent)
@@ -174,9 +168,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         mAdapter.setQuestionArrayList(mQuestionArrayList)
         listView.adapter = mAdapter
 
-        if (mGenreRef != null) {
-            mGenreRef!!.removeEventListener(mEventListener)
-        }
+        if (mGenreRef != null) { mGenreRef!!.removeEventListener(mEventListener) }
         mGenreRef = mDatabaseReference.child(ContentsPATH).child(mGenre.toString())
         mGenreRef!!.addChildEventListener(mEventListener)
         return true
