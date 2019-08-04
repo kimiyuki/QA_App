@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.item_fav_child.view.*
 
 class FavListAdapter(val context: Context): BaseExpandableListAdapter() {
     val mLayoutInflater = LayoutInflater.from(context)
+
     override fun getGroup(groupPosition: Int): Any {
        val keys = Qa_App.favGenreQuestions.keys.toIntArray()
        return Qa_App.favGenreQuestions[keys[groupPosition]] as Any
@@ -24,7 +25,9 @@ class FavListAdapter(val context: Context): BaseExpandableListAdapter() {
         var cv = convertView ?: mLayoutInflater.inflate(R.layout.item_fav_parent, null)
         val title = cv!!.findViewById<TextView>(R.id.textViewFavListParent)
         val grp = getGroup(groupPosition) as MutableList<Map<String, String>>
-        title.text = Qa_App.FavoriteMap[grp[0]["genre"]!!.toInt()]
+        if(grp.size > 0 ) {
+            title.text = Qa_App.FavoriteMap[grp[0]["genre"]!!.toInt()]
+        }
         return cv
     }
 

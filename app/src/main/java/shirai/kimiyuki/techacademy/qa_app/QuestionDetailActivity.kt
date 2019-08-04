@@ -119,7 +119,10 @@ fun toggleFavData(mQuestion:Question){
                 userFavoriteRef.child(ret[0].key!!).removeValue().addOnCompleteListener {
                     Qa_App.favGenreQuestions[mQuestion.genre]?.removeIf {
                         it["questionId"] == mQuestion.questionUid }
-                    Log.d("hello remove", Qa_App.favGenreQuestions[mQuestion.genre]?.size.toString())
+                    Qa_App.favGenreQuestions = Qa_App.favGenreQuestions.filter{
+                        it.value.size > 0
+                    }.toMutableMap()
+                    Log.d("hello remove fav", Qa_App.favGenreQuestions[mQuestion.genre]?.size.toString())
                 }
             }
         }

@@ -23,11 +23,15 @@ class FavActivity() : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_fav)
+    }
+
+    override fun onResume() {
+        super.onResume()
         adapter = FavListAdapter(this)
         rvFaqs.setAdapter(adapter)
         Log.d("hello fav", "onCreate")
         rvFaqs.setOnGroupCollapseListener {groupPosition ->
-           Toast.makeText(this, "hello:${groupPosition}",Toast.LENGTH_LONG)
+            Toast.makeText(this, "hello:${groupPosition}",Toast.LENGTH_LONG)
         }
         rvFaqs.setOnGroupExpandListener { groupPosition ->
             Toast.makeText(this, "hello:${groupPosition}",Toast.LENGTH_LONG)
@@ -50,7 +54,6 @@ class FavActivity() : AppCompatActivity() {
             }
         })
     }
-
     private fun sendQuestionDetail(genre:String?, questionId:String?, callback:(Question)->Unit){
         val ref = FirebaseDatabase.getInstance().reference
             .child(ContentsPATH).child(genre.toString()).orderByChild("questionId")
