@@ -17,12 +17,6 @@ class QuestionDetailActivity() : AppCompatActivity(){
     private lateinit var mAnswerRef: DatabaseReference
     private val databaseReference = FirebaseDatabase.getInstance().reference
 
-    init{
-//        val fav = Fav()
-//        fav.toggleFav()
-//        fav.updateList()
-    }
-
     private val mEventListener = object: ChildEventListener{
         override fun onCancelled(p0: DatabaseError) { }
         override fun onChildMoved(p0: DataSnapshot, p1: String?) { }

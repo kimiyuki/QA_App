@@ -10,7 +10,6 @@ import com.google.firebase.database.ValueEventListener
 
 class Qa_App: Application() {
     companion object {
-        var favQuestions: MutableList<Map<String, String>> = mutableListOf()
         var favGenreQuestions: MutableMap<Int, MutableList<Map<String,  String>>> = mutableMapOf()
         val FavoriteMap = mapOf(Pair(1, "趣味"), Pair(2, "生活"), Pair(3, "健康"), Pair(4, "コンピュータ"))
     }
@@ -26,7 +25,6 @@ class Qa_App: Application() {
         ref.child(FavoritesPATH).child(user.uid).orderByKey().addListenerForSingleValueEvent(object: ValueEventListener{
             override fun onCancelled(p0: DatabaseError) { }
             override fun onDataChange(snapshot: DataSnapshot) {
-                favQuestions.clear()
                 favGenreQuestions.clear()
                 favGenreQuestions = snapshot.children
                     .map{ it.value as Map<String, String> }
