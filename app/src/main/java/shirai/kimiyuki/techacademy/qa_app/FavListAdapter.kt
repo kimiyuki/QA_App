@@ -10,15 +10,12 @@ import android.view.ViewGroup
 import android.widget.BaseExpandableListAdapter
 import android.widget.TextView
 import android.widget.ToggleButton
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import kotlinx.android.synthetic.main.item_fav_child.view.*
 import kotlinx.android.synthetic.main.list_questions.view.*
 import shirai.kimiyuki.techacademy.qa_app.Model.Question
-import kotlin.coroutines.*
 
 class FavListAdapter(val context: Context): BaseExpandableListAdapter() {
     val mLayoutInflater = LayoutInflater.from(context)

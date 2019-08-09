@@ -22,29 +22,6 @@ import kotlinx.android.synthetic.main.content_main.*
 import shirai.kimiyuki.techacademy.qa_app.Model.Answer
 import shirai.kimiyuki.techacademy.qa_app.Model.Question
 
-fun makeQuestionBySnap(k:String, m:Map<String,  Any>, mGenre:Int): Question {
-    val title = m["title"] as String ?: ""
-    val body = m["body"] as String ?: "" as String
-    val name = m["name"] as String ?: "" as String
-    val uid = m["uid"] as String ?: "" as String
-    val imageString = (m["image"] ?: "") as String
-    val bytes = if (imageString.isNotEmpty()) Base64.decode(imageString, Base64.DEFAULT) else byteArrayOf()
-
-    val answerArrayList = ArrayList<Answer>()
-    val answerMap = m["answers"] as Map<String, String>?
-    if (answerMap != null) {
-        for (key in answerMap.keys) {
-            val temp = answerMap[key] as Map<String, String>
-            val answerBody = temp["body"] ?: ""
-            val answerName = temp["name"] ?: ""
-            val answerUid = temp["uid"] ?: ""
-            val answer = Answer(answerBody, answerName, answerUid, key)
-            answerArrayList.add(answer)
-        }
-    }
-    return Question(title=title, body=body, name = name, uid=uid, questionUid = k,
-        genre=mGenre, bytes = bytes, answers = answerArrayList)
-}
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var mGenre = 0
